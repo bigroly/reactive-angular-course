@@ -5,6 +5,7 @@ import {FormBuilder, Validators, FormGroup} from "@angular/forms";
 import * as moment from 'moment';
 import {catchError} from 'rxjs/operators';
 import {throwError} from 'rxjs';
+import { CoursesService } from '../services/courses.service';
 
 @Component({
     selector: 'course-dialog',
@@ -18,17 +19,18 @@ export class CourseDialogComponent implements AfterViewInit {
     course:Course;
 
     constructor(
-        private fb: FormBuilder,
-        private dialogRef: MatDialogRef<CourseDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) course:Course) {
+        private _fb: FormBuilder,
+        private _dialogRef: MatDialogRef<CourseDialogComponent>,
+        @Inject(MAT_DIALOG_DATA) _course:Course,
+        private _coursesService: CoursesService) {
 
-        this.course = course;
+        this.course = _course;
 
-        this.form = fb.group({
-            description: [course.description, Validators.required],
-            category: [course.category, Validators.required],
+        this.form = _fb.group({
+            description: [_course.description, Validators.required],
+            category: [_course.category, Validators.required],
             releasedAt: [moment(), Validators.required],
-            longDescription: [course.longDescription,Validators.required]
+            longDescription: [_course.longDescription,Validators.required]
         });
 
     }
@@ -38,13 +40,17 @@ export class CourseDialogComponent implements AfterViewInit {
     }
 
     save() {
-
-      const changes = this.form.value;
-
+        const changes = this.form.value;
+        this._coursesService.saveCourse(this.course.id, changes)
+            .subscribe(
+                val => {
+                    this._dialogRef.close(val);
+                }
+            );
     }
 
     close() {
-        this.dialogRef.close();
+        this._dialogRef.close();
     }
 
 }
